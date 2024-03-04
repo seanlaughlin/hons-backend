@@ -19,6 +19,10 @@ const AccessReview = mongoose.model(
       minlength: 3,
       maxlength: 20,
     },
+    date: {
+      type: Date,
+      required: true,
+    },
     for: {
       type: Boolean,
       required: true,
@@ -37,6 +41,7 @@ function validateAccessReview(review) {
     venueId: Joi.objectId().required(),
     accessibilityId: Joi.objectId().required(),
     user: Joi.string().min(3).max(20).required(),
+    date: Joi.date().required(),
     for: Joi.boolean().required(),
     comment: Joi.string().max(200),
   };

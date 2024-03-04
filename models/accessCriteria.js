@@ -4,23 +4,17 @@ const mongoose = require("mongoose");
 const AccessCriteria = mongoose.model(
   "AccessCriteria",
   new mongoose.Schema({
-    critieria: {
+    criteria: {
       type: String,
       required: true,
-      minlength: 3,
-      maxlength: 20,
     },
     name: {
       type: String,
       required: true,
-      minlength: 3,
-      maxlength: 20,
     },
     title: {
       type: String,
       required: true,
-      minlength: 3,
-      maxlength: 20,
     },
   })
 );

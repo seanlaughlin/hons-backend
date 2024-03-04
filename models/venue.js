@@ -1,6 +1,8 @@
 const Joi = require("joi");
 const { join } = require("lodash");
+const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
+Joi.objectId = require("joi-objectid")(Joi);
 
 const Venue = mongoose.model(
   "Venue",
@@ -39,13 +41,42 @@ const Venue = mongoose.model(
         },
       },
     },
+    coords: {
+      type: {
+        latitude: Number,
+        longitude: Number,
+      },
+      requred: true,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: ObjectId,
+      required: true,
+    },
+    imageUris: {
+      type: [String],
+    },
+    accessibility: {
+      type: Array,
+    },
+    distanceToUser: {
+      type: Number,
+    },
   })
 );
 
 function validateVenue(venue) {
   const schema = {
-    name: Joi.min(5).max(40).required(),
-    address: Joi.min(15).required(),
+    name: Joi.string().min(5).max(40).required(),
+    address: Joi.string().min(15).required(),
+    neighbourhood: Joi.string().required(),
+    coords: Joi.object().required(),
+    type: Joi.string().required(),
+    category: Joi.objectId().required(),
+    imageUris: Joi.array().required(),
   };
 
   return Joi.validate(venue, schema);
