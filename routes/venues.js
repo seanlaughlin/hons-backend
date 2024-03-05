@@ -9,13 +9,14 @@ router.get("/", async (req, res) => {
   res.send(venues);
 });
 
-router.get("/filter", async (req, res) => {
+router.post("/filter", async (req, res) => {
   const location = req.body.location;
   const maxDistance = req.body.maxDistance;
   const categoryIds = req.body.categoryIds;
   const accessibilityCriteria = req.body.accessibilityCriteria;
+  const searchTerm = req.body.searchTerm;
 
-  if (!location.latitude || !location.longitude || !maxDistance) {
+  if (!location || !location.latitude || !location.longitude) {
     return res.status(400).send("Invalid input");
   }
 
@@ -25,43 +26,44 @@ router.get("/filter", async (req, res) => {
       "coords.longitude": { $exists: true },
     });
 
-    if (categoryIds.length > 0) {
+    if (categoryIds && categoryIds.length > 0) {
       query = query.where("category").in(categoryIds);
     }
 
-    if (accessibilityCriteria.length > 0) {
-      query = query.where({
-        "accessibility.criteria": { $in: accessibilityCriteria },
-        $expr: {
-          $gt: [
-            {
-              $divide: [
-                "$accessibility.reportedFor",
-                {
-                  $add: [
-                    "$accessibility.reportedFor",
-                    "$accessibility.reportedAgainst",
-                  ],
-                },
-              ],
-            },
-            0.7,
-          ],
-        },
-      });
+    if (accessibilityCriteria && accessibilityCriteria.length > 0) {
+      query = query.where("accessibility.criteria").in(accessibilityCriteria);
+    }
+
+    // search if search term is provided
+    if (searchTerm) {
+      query = query.find({ $text: { $search: searchTerm } });
     }
 
     const nearbyVenues = await query.lean();
 
-    const filteredVenues = nearbyVenues.filter((venue) => {
-      const distance = calculateDistance(
+    let filteredVenues = nearbyVenues;
+
+    if (maxDistance) {
+      filteredVenues = nearbyVenues.filter((venue) => {
+        const distance = calculateDistance(
+          location.latitude,
+          location.longitude,
+          venue.coords.latitude,
+          venue.coords.longitude
+        );
+        return distance <= maxDistance;
+      });
+    }
+
+    filteredVenues = filteredVenues.map((venue) => ({
+      ...venue,
+      distanceToUser: calculateDistance(
         location.latitude,
         location.longitude,
         venue.coords.latitude,
         venue.coords.longitude
-      );
-      return distance <= maxDistance;
-    });
+      ).toFixed(2),
+    }));
 
     res.send(filteredVenues);
   } catch (error) {
