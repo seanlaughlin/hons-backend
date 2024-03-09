@@ -4,6 +4,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   const result = await AccessCriteria.find();
+  console.info("Access Criteria request from: ", req.ip);
   res.send(result);
 });
 

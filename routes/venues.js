@@ -9,6 +9,7 @@ router.get("/", async (req, res) => {
   res.send(venues);
 });
 
+// only filters if does have one of accessibiltiies supplied - doesn't filter out if doesn't have others
 router.post("/filter", async (req, res) => {
   const location = req.body.location;
   const maxDistance = req.body.maxDistance;
@@ -31,18 +32,32 @@ router.post("/filter", async (req, res) => {
     }
 
     if (accessibilityCriteria && accessibilityCriteria.length > 0) {
-      query = query.where("accessibility.criteria").in(accessibilityCriteria);
+      accessibilityCriteria.forEach((criteria) => {
+        query = query.where("accessibility.criteria").equals(criteria);
+      });
     }
 
-    // search if search term is provided
     if (searchTerm) {
-      query = query.find({ $text: { $search: searchTerm } });
+      const searchTermsArray = searchTerm.split(" ");
+      const regexArray = searchTermsArray.map((term) => new RegExp(term, "i"));
+      query = query.find({
+        $and: regexArray.map((termRegex) => ({
+          $or: [
+            { name: { $regex: termRegex } },
+            { neighbourhood: { $regex: termRegex } },
+            { type: { $regex: termRegex } },
+            { address: { $regex: termRegex } },
+            {
+              "accessibility.name": { $regex: termRegex },
+            },
+          ],
+        })),
+      });
     }
 
     const nearbyVenues = await query.lean();
 
     let filteredVenues = nearbyVenues;
-
     if (maxDistance) {
       filteredVenues = nearbyVenues.filter((venue) => {
         const distance = calculateDistance(
@@ -64,6 +79,8 @@ router.post("/filter", async (req, res) => {
         venue.coords.longitude
       ).toFixed(2),
     }));
+
+    filteredVenues.sort((a, b) => a.distanceToUser - b.distanceToUser);
 
     res.send(filteredVenues);
   } catch (error) {
