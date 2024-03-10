@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
 // only filters if does have one of accessibiltiies supplied - doesn't filter out if doesn't have others
 router.post("/filter", async (req, res) => {
   const location = req.body.location;
-  const maxDistance = req.body.maxDistance;
+  const maxDistance = 5;
   const categoryIds = req.body.categoryIds;
   const accessibilityCriteria = req.body.accessibilityCriteria;
   const searchTerm = req.body.searchTerm;
