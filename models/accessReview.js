@@ -1,5 +1,6 @@
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
+const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 
 const AccessReview = mongoose.model(
@@ -9,7 +10,7 @@ const AccessReview = mongoose.model(
       type: ObjectId,
       required: true,
     },
-    accessibilityId: {
+    accessId: {
       type: ObjectId,
       required: true,
     },
@@ -39,7 +40,7 @@ const AccessReview = mongoose.model(
 function validateAccessReview(review) {
   const schema = {
     venueId: Joi.objectId().required(),
-    accessibilityId: Joi.objectId().required(),
+    accessId: Joi.objectId().required(),
     user: Joi.string().min(3).max(20).required(),
     date: Joi.date().required(),
     for: Joi.boolean().required(),
