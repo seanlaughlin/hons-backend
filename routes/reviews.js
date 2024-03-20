@@ -4,10 +4,11 @@ const router = express.Router();
 const reviews = require("../mockdata/accessReviews");
 
 router.post("/", async (req, res) => {
-  const { accessId, venueId } = req.body;
+  const { accessCriteria, venueId } = req.body;
   console.log(req.body);
+  console.log(accessCriteria);
   const result = await AccessReview.find({
-    // accessId: accessId,
+    accessCriteria: accessCriteria,
     venueId: venueId,
   });
   res.send(result);

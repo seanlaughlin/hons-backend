@@ -17,6 +17,8 @@ router.post("/filter", async (req, res) => {
   const accessibilityCriteria = req.body.accessibilityCriteria;
   const searchTerm = req.body.searchTerm;
 
+  console.log(accessibilityCriteria);
+
   if (!location || !location.latitude || !location.longitude) {
     return res.status(400).send("Invalid input");
   }
@@ -31,11 +33,9 @@ router.post("/filter", async (req, res) => {
       query = query.where("category").in(categoryIds);
     }
 
-    if (accessibilityCriteria && accessibilityCriteria.length > 0) {
-      accessibilityCriteria.forEach((criteria) => {
-        query = query.where("accessibility.criteria").equals(criteria);
-      });
-    }
+    accessibilityCriteria.forEach((criteria) => {
+      query = query.where("accessibility").elemMatch({ criteria: criteria });
+    });
 
     if (searchTerm) {
       const searchTermsArray = searchTerm.split(" ");
@@ -69,6 +69,19 @@ router.post("/filter", async (req, res) => {
         return distance <= maxDistance;
       });
     }
+
+    filteredVenues = filteredVenues.filter((venue) => {
+      return accessibilityCriteria.every((criteria) => {
+        const matchedAccessibility = venue.accessibility.find(
+          (access) => access.criteria === criteria
+        );
+        return (
+          matchedAccessibility &&
+          matchedAccessibility.reportedFor >
+            matchedAccessibility.reportedAgainst
+        );
+      });
+    });
 
     filteredVenues = filteredVenues.map((venue) => ({
       ...venue,

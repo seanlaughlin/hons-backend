@@ -10,8 +10,8 @@ const AccessReview = mongoose.model(
       type: ObjectId,
       required: true,
     },
-    accessId: {
-      type: ObjectId,
+    accessCriteria: {
+      type: String,
       required: true,
     },
     user: {
@@ -40,7 +40,7 @@ const AccessReview = mongoose.model(
 function validateAccessReview(review) {
   const schema = {
     venueId: Joi.objectId().required(),
-    accessId: Joi.objectId().required(),
+    accessCriteria: Joi.string().required(),
     user: Joi.string().min(3).max(20).required(),
     date: Joi.date().required(),
     for: Joi.boolean().required(),

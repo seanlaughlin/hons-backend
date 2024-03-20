@@ -3,7 +3,7 @@ const { ObjectId } = require("mongodb");
 const accessReviews = [
   {
     venueId: new ObjectId("65e5b6508829454b36be87d4"),
-    accessId: new ObjectId("65e4e2f3eb8923aefd07ad3f"),
+    accessCriteria: "Automatic/No Doors",
     user: "BigJim",
     date: new Date(),
     for: true,
@@ -12,7 +12,7 @@ const accessReviews = [
   },
   {
     venueId: new ObjectId("65e5b6508829454b36be87d1"),
-    accessId: new ObjectId("65e4e2f3eb8923aefd07ad3d"),
+    accessCriteria: "ASD Friendly",
     user: "PurpleDuck221",
     date: new Date(),
     for: true,
@@ -22,7 +22,7 @@ const accessReviews = [
   },
   {
     venueId: new ObjectId("65e5b6508829454b36be87d1"),
-    accessId: new ObjectId("65e4e2f3eb8923aefd07ad3d"),
+    accessCriteria: "Wheelchair Accessible",
     user: "BigJim",
     date: new Date(),
     for: true,
