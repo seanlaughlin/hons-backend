@@ -9,18 +9,30 @@ router.get("/", async (req, res) => {
   res.send(venues);
 });
 
-// only filters if does have one of accessibiltiies supplied - doesn't filter out if doesn't have others
 router.post("/filter", async (req, res) => {
   const location = req.body.location;
   const maxDistance = req.body.maxDistance;
   const categoryIds = req.body.categoryIds;
   const accessibilityCriteria = req.body.accessibilityCriteria;
   const searchTerm = req.body.searchTerm;
+  const showMixedReviews = req.body.showMixedReviews;
+  const showNoReviews = req.body.showNoReviews;
 
-  console.log(accessibilityCriteria);
+  const accessibilityFilter = (accessibility) => {
+    if (showMixedReviews) {
+      return accessibility.reportedFor > 0;
+    }
+    if (showNoReviews) {
+      return true;
+    } else {
+      return (
+        accessibility.reportedFor > 0 && accessibility.reportedAgainst === 0
+      );
+    }
+  };
 
   if (!location || !location.latitude || !location.longitude) {
-    return res.status(400).send("Invalid input");
+    return res.status(400).send("No user location provided.");
   }
 
   try {
@@ -76,9 +88,7 @@ router.post("/filter", async (req, res) => {
           (access) => access.criteria === criteria
         );
         return (
-          matchedAccessibility &&
-          matchedAccessibility.reportedFor >
-            matchedAccessibility.reportedAgainst
+          matchedAccessibility && accessibilityFilter(matchedAccessibility)
         );
       });
     });

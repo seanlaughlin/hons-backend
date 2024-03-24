@@ -34,6 +34,10 @@ const AccessReview = mongoose.model(
       required: false,
       maxlength: 200,
     },
+    image: {
+      type: Object,
+      required: false,
+    },
   })
 );
 
@@ -45,6 +49,7 @@ function validateAccessReview(review) {
     date: Joi.date().required(),
     for: Joi.boolean().required(),
     comment: Joi.string().max(200),
+    object: Joi.object(),
   };
 
   return Joi.validate(review, schema);
