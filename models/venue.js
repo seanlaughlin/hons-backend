@@ -54,7 +54,7 @@ const venueSchema = new mongoose.Schema({
     required: true,
   },
   imageUris: {
-    type: [String],
+    type: Array,
   },
   accessibility: {
     type: Array,

@@ -9,6 +9,8 @@ const imageResize = require("../middleware/imageResize");
 const { VenueCategory } = require("../models/category");
 const { VenueType } = require("../models/type");
 
+const outputFolder = "assets/venue-images";
+
 const upload = multer({
   dest: "uploads/",
   limits: { fieldSize: 25 * 1024 * 1024 },
@@ -135,7 +137,10 @@ router.post("/filter", async (req, res) => {
 
 router.post(
   "/save",
-  [upload.array("images"), imageResize],
+  [
+    upload.array("images"),
+    (req, res, next) => imageResize(req, res, next, outputFolder),
+  ],
   async (req, res) => {
     if (!req.files) {
       console.log("No images uploaded");
@@ -146,11 +151,20 @@ router.post(
       address: req.body.address,
       coords: JSON.parse(req.body.coords),
       neighbourhood: req.body.neighbourhood,
-      openingHours: JSON.parse(req.body.openingHours),
-      contact: JSON.parse(req.body.contact),
+      openingHours: [],
+      contact: {},
     };
-    if (req.images) venue.imageUris = req.images;
-    console.log(req.images);
+    if (req.image) venue.imageUris = [req.image];
+    if (req.images) venueUris = req.images;
+    console.log(req);
+
+    if (req.body.openingHours) {
+      venue.openingHours = JSON.parse(req.body.openingHours);
+    }
+
+    if (req.body.contact) {
+      venue.contact = JSON.parse(req.body.contact);
+    }
 
     const category = await VenueCategory.findOne({ title: req.body.category });
     const type = await VenueType.findOne({ title: req.body.type });

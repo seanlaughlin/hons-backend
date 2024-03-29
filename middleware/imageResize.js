@@ -1,11 +1,9 @@
 const sharp = require("sharp");
 const path = require("path");
 
-const outputFolder = "public/assets/review-images";
-
 module.exports = async (req, res, next, outputFolder) => {
   let images = [];
-  console.log(req.file);
+  console.log(req.files);
   // Function to process a single image
   const processImage = async (file) => {
     const fullImagePath = path.resolve(
