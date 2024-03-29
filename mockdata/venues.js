@@ -18,7 +18,7 @@ const venues = [
     coords: { latitude: 55.86506, longitude: -4.27778 },
     type: "school",
     category: new ObjectId("65e4ce2aed4632029aef1964"),
-    imageUris: ["../assets/school.jpg"],
+    imageUris: ["assets/school.jpg"],
     accessibility: [
       {
         criteria: "wheelchair",
@@ -65,9 +65,9 @@ const venues = [
     type: "pharmacy",
     category: new ObjectId("65e4ce2aed4632029aef196d"),
     imageUris: [
-      "../assets/lloyds.jpg",
-      "../assets/lloyds2.jpg",
-      "../assets/lloyds3.jpg",
+      "assets/lloyds.jpg",
+      "assets/lloyds2.jpg",
+      "assets/lloyds3.jpg",
     ],
     accessibility: [
       {

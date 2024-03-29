@@ -3,27 +3,19 @@ const path = require("path");
 
 const outputFolder = "public/assets/review-images";
 
-module.exports = async (req, res, next) => {
-  let image = null;
-
-  if (!req.file) {
-    // If no files are uploaded, skip processing
-    return next();
-  }
-
-  const resizePromise = async () => {
-    const file = req.file;
-    console.log(file);
+module.exports = async (req, res, next, outputFolder) => {
+  let images = [];
+  console.log(req.file);
+  // Function to process a single image
+  const processImage = async (file) => {
     const fullImagePath = path.resolve(
-      outputFolder,
+      "public/" + outputFolder,
       file.filename + "_full.jpg"
     );
     const thumbImagePath = path.resolve(
-      outputFolder,
+      "public/" + outputFolder,
       file.filename + "_thumb.jpg"
     );
-
-    console.log(fullImagePath);
 
     try {
       // Create the full-sized image
@@ -33,7 +25,6 @@ module.exports = async (req, res, next) => {
       fullImageSharp.on("info", (info) => {
         console.log(`Full Image Processing: ${info.percent}% complete`);
       });
-
       await fullImageSharp.toFile(fullImagePath);
 
       // Create the thumbnail
@@ -43,21 +34,35 @@ module.exports = async (req, res, next) => {
       thumbImageSharp.on("info", (info) => {
         console.log(`Thumbnail Processing: ${info.percent}% complete`);
       });
-
       await thumbImageSharp.toFile(thumbImagePath);
 
-      image = {
-        full: "assets/review-images/" + file.filename + "_full.jpg",
-        thumb: "assets/review-images/" + file.filename + "_thumb.jpg",
-      };
+      // Store image paths
+      images.push({
+        full: `${outputFolder}/` + file.filename + "_full.jpg",
+        thumb: `${outputFolder}/` + file.filename + "_thumb.jpg",
+      });
     } catch (error) {
       console.error("Error resizing image:", error);
     }
   };
 
-  await resizePromise();
+  // Process single image
+  if (req.file) {
+    await processImage(req.file);
+  }
 
-  req.image = image;
+  // Process multiple images
+  if (req.files) {
+    const filesArray = Array.isArray(req.files) ? req.files : [req.files];
+    await Promise.all(filesArray.map(processImage));
+  }
+
+  // Assign req.image or req.images based on the number of uploaded images
+  if (images.length === 1) {
+    req.image = images[0];
+  } else if (images.length > 1) {
+    req.images = images;
+  }
 
   next();
 };

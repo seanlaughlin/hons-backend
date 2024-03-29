@@ -6,6 +6,8 @@ const multer = require("multer");
 
 const imageResize = require("../middleware/imageResize");
 
+const outputFolder = "assets/review-images";
+
 const upload = multer({
   dest: "uploads/",
   limits: { fieldSize: 25 * 1024 * 1024 },
@@ -22,13 +24,14 @@ router.post("/", async (req, res) => {
 
 router.post(
   "/save",
-  [upload.single("image"), imageResize],
+  [
+    upload.single("image"),
+    (req, res, next) => imageResize(req, res, next, outputFolder),
+  ],
   async (req, res) => {
     if (!req.file) {
       console.log("No image uploaded");
     }
-
-    console.log("r");
 
     const review = {
       user: req.body.user,
@@ -52,9 +55,7 @@ router.post(
 
       // Update reportedFor or reportedAgainst based on the 'for' property of the review
       const fieldToUpdate =
-        review.for === true ? "reportedFor" : "reportedAgainst";
-      console.log(review.for);
-      console.log(fieldToUpdate);
+        review.for === "true" ? "reportedFor" : "reportedAgainst";
       venue.accessibility.forEach((access) => {
         if (access.name === review.accessCriteria) {
           access[fieldToUpdate]++;
@@ -63,7 +64,7 @@ router.post(
 
       await Venue.findByIdAndUpdate(req.body.venueId, venue);
 
-      res.status(201).send(result);
+      res.status(200).send(result);
     } catch (err) {
       console.error("Error saving review:", err);
       res.status(500).send("Internal server error - Unable to save.");

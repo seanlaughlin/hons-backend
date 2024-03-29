@@ -3,27 +3,42 @@ const express = require("express");
 const router = express.Router();
 const venues = require("../mockdata/venues");
 const calculateDistance = require("../utils/calculateDistance");
+const multer = require("multer");
+
+const imageResize = require("../middleware/imageResize");
+const { VenueCategory } = require("../models/category");
+const { VenueType } = require("../models/type");
+
+const upload = multer({
+  dest: "uploads/",
+  limits: { fieldSize: 25 * 1024 * 1024 },
+});
 
 router.get("/", async (req, res) => {
-  const venues = await Venue.find();
-  res.send(venues);
+  const result = await Venue.find();
+  if (result) res.send(result);
+  else res.status(404).send();
 });
 
 router.post("/filter", async (req, res) => {
   const location = req.body.location;
   const maxDistance = req.body.maxDistance;
   const categoryIds = req.body.categoryIds;
+  const typeIds = req.body.typeIds;
   const accessibilityCriteria = req.body.accessibilityCriteria;
   const searchTerm = req.body.searchTerm;
   const showMixedReviews = req.body.showMixedReviews;
   const showNoReviews = req.body.showNoReviews;
 
   const accessibilityFilter = (accessibility) => {
-    if (showMixedReviews) {
+    if ((showMixedReviews && showNoReviews) || showNoReviews) {
+      return (
+        (accessibility.reportedFor > 0 && accessibility.reportedAgainst > 0) ||
+        accessibility.reportedFor + accessibility.reportedAgainst === 0 ||
+        (accessibility.reportedFor > 0 && accessibility.reportedAgainst === 0)
+      );
+    } else if (showMixedReviews) {
       return accessibility.reportedFor > 0;
-    }
-    if (showNoReviews) {
-      return true;
     } else {
       return (
         accessibility.reportedFor > 0 && accessibility.reportedAgainst === 0
@@ -103,6 +118,12 @@ router.post("/filter", async (req, res) => {
       ).toFixed(2),
     }));
 
+    if (typeIds && typeIds.length > 0) {
+      filteredVenues = filteredVenues.filter((venue) =>
+        typeIds.includes(venue.type._id.toString())
+      );
+    }
+
     filteredVenues.sort((a, b) => a.distanceToUser - b.distanceToUser);
 
     res.send(filteredVenues);
@@ -111,5 +132,39 @@ router.post("/filter", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+router.post(
+  "/save",
+  [upload.array("images"), imageResize],
+  async (req, res) => {
+    if (!req.files) {
+      console.log("No images uploaded");
+    }
+
+    const venue = {
+      name: req.body.name,
+      address: req.body.address,
+      coords: JSON.parse(req.body.coords),
+      neighbourhood: req.body.neighbourhood,
+      openingHours: JSON.parse(req.body.openingHours),
+      contact: JSON.parse(req.body.contact),
+    };
+    if (req.images) venue.imageUris = req.images;
+    console.log(req.images);
+
+    const category = await VenueCategory.findOne({ title: req.body.category });
+    const type = await VenueType.findOne({ title: req.body.type });
+    venue.category = category._id;
+    venue.type = type;
+
+    try {
+      const result = await Venue.create(venue);
+      res.status(200).send(result);
+    } catch (err) {
+      console.error("Error saving venue:", err);
+      res.status(500).send("Internal server error - Unable to save.");
+    }
+  }
+);
 
 module.exports = router;

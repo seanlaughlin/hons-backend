@@ -3,6 +3,7 @@ const categories = require("../routes/categories");
 const accessCriteria = require("../routes/accessCriteria");
 const venues = require("../routes/venues");
 const reviews = require("../routes/reviews");
+const types = require("../routes/types");
 
 module.exports = function (app) {
   app.use(express.json());
@@ -10,4 +11,5 @@ module.exports = function (app) {
   app.use("/api/access", accessCriteria);
   app.use("/api/venues", venues);
   app.use("/api/reviews", reviews);
+  app.use("/api/types", types);
 };
