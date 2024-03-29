@@ -26,7 +26,6 @@ const venueSchema = new mongoose.Schema({
     type: {
       phone: {
         type: String,
-        required: true,
         minLength: 11,
       },
       email: {
@@ -47,7 +46,7 @@ const venueSchema = new mongoose.Schema({
     required: true,
   },
   type: {
-    type: String,
+    type: Object,
     required: true,
   },
   category: {
@@ -81,7 +80,7 @@ function validateVenue(venue) {
     address: Joi.string().min(15).required(),
     neighbourhood: Joi.string().required(),
     coords: Joi.object().required(),
-    type: Joi.string().required(),
+    type: Joi.object().required(),
     category: Joi.objectId().required(),
     imageUris: Joi.array().required(),
   };
