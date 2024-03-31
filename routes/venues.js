@@ -8,6 +8,7 @@ const multer = require("multer");
 const imageResize = require("../middleware/imageResize");
 const { VenueCategory } = require("../models/category");
 const { VenueType } = require("../models/type");
+const { AccessCriteria } = require("../models/accessCriteria");
 
 const outputFolder = "assets/venue-images";
 
@@ -155,8 +156,7 @@ router.post(
       contact: {},
     };
     if (req.image) venue.imageUris = [req.image];
-    if (req.images) venueUris = req.images;
-    console.log(req);
+    if (req.images) venue.imageUris = req.images;
 
     if (req.body.openingHours) {
       venue.openingHours = JSON.parse(req.body.openingHours);
@@ -166,11 +166,19 @@ router.post(
       venue.contact = JSON.parse(req.body.contact);
     }
 
+    const accessCategories = await AccessCriteria.find();
+    const accessibility = accessCategories.map((item) => ({
+      criteria: item.criteria,
+      name: item.name,
+      reportedFor: 0,
+      reportedAgainst: 0,
+    }));
+
     const category = await VenueCategory.findOne({ title: req.body.category });
     const type = await VenueType.findOne({ title: req.body.type });
     venue.category = category._id;
     venue.type = type;
-
+    venue.accessibility = accessibility;
     try {
       const result = await Venue.create(venue);
       res.status(200).send(result);
