@@ -8,13 +8,12 @@ const venueSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minLength: 5,
+    minLength: 3,
     maxLength: 40,
   },
   address: {
     type: String,
     required: true,
-    minLength: 15,
   },
   neighbourhood: {
     type: String,
@@ -26,15 +25,12 @@ const venueSchema = new mongoose.Schema({
     type: {
       phone: {
         type: String,
-        minLength: 11,
       },
       email: {
         type: String,
-        minLength: 5,
       },
       website: {
         type: String,
-        minLength: 3,
       },
     },
   },
@@ -76,8 +72,8 @@ const Venue = mongoose.model("Venue", venueSchema);
 
 function validateVenue(venue) {
   const schema = {
-    name: Joi.string().min(5).max(40).required(),
-    address: Joi.string().min(15).required(),
+    name: Joi.string().min(3).max(40).required(),
+    address: Joi.string().required(),
     neighbourhood: Joi.string().required(),
     coords: Joi.object().required(),
     type: Joi.object().required(),
